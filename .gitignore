@@ -1,0 +1,35 @@
+# macOS
+.DS_Store
+
+# Xcode
+build/
+DerivedData/
+*.xcuserstate
+xcuserdata/
+*.xccheckout
+*.moved-aside
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+.build/
+
+# Swift Package Manager
+.swiftpm/
+# Package.resolved is intentionally tracked: this is an app, pin dependencies
+
+# Release artifacts
+*.dmg
+dist/
+
+# Fastlane
+fastlane/report.xml
+fastlane/test_output/
+
+# Node (npx markdownlint)
+node_modules/
+
+# Editors
+.idea/
+.vscode/
+*.swp
