@@ -3,6 +3,9 @@ name: Pre-commit
 on:
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   precommit:
     runs-on: ubuntu-latest
