@@ -1,0 +1,27 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: mixed-line-ending
+      - id: check-yaml
+      - id: check-json
+      - id: check-merge-conflict
+      - id: check-case-conflict
+      - id: check-added-large-files
+      - id: detect-private-key
+
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.50.0
+    hooks:
+      - id: markdownlint
+        language_version: lts
+
+  - repo: local
+    hooks:
+      - id: swiftlint
+        name: swiftlint
+        entry: ghcr.io/realm/swiftlint:0.65.1 lint --strict --quiet --no-cache
+        language: docker_image
+        types: [swift]
