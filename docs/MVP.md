@@ -63,17 +63,10 @@ ranges, undated notes, sync, iOS/Android/web, subscriptions and billing, plugin 
    appends nothing; a killed app restores the draft.
 8. Correct behavior for weeks crossing months/years.
 
-## Suggested Build Slices (vertical, each tested)
+## Build Order
 
-0. Walking skeleton: an empty note window plus tests, linting, CI build and a published release (Epic 0 in
-   [MVP-user-stories.md](MVP-user-stories.md)).
-1. Data layer: GRDB schema, period model, logical-day calculation, with unit tests.
-2. Editor: NSTextView note view with autosave for a single period.
-3. Navigation: breadcrumb + adaptive strip + anchor date.
-4. Markdown formatting polish (lists, checkboxes).
-5. Logical-day setting UI.
-6. Meeting scratchpad with draft recovery and Done/Discard.
-7. Daily-use hardening: crash recovery, edge dates, performance.
+See [MVP-user-stories.md](MVP-user-stories.md): US-1 (basic app) and US-2 (delivery pipeline) form the walking
+skeleton; US-3 to US-14 are small, complete, tested features delivered in order.
 
 ## Definition of Done
 
