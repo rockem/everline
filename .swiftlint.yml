@@ -1,0 +1,5 @@
+included:
+  - everline
+  - everlineUITests
+
+line_length: 120
