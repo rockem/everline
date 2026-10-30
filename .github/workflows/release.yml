@@ -5,7 +5,7 @@ on:
     inputs:
       tag:
         description: Existing release tag to package
-      required: true
+        required: true
   release:
     types: [published]
 
