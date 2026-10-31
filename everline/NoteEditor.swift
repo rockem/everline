@@ -14,8 +14,10 @@ struct NoteEditor: NSViewRepresentable {
         textView.isEditable = true
         textView.isRichText = false
         textView.allowsUndo = true
-        textView.font = .systemFont(ofSize: NSFont.systemFontSize)
+        textView.font = .monospacedSystemFont(ofSize: 14, weight: .regular)
         textView.setAccessibilityIdentifier("note-editor")
+        // The view has no window yet; focus it once it is attached.
+        DispatchQueue.main.async { textView.window?.makeFirstResponder(textView) }
         return scrollView
     }
 
@@ -29,9 +31,12 @@ struct NoteEditor: UIViewRepresentable {
         let textView = UITextView()
         textView.isEditable = true
         textView.allowsEditingTextAttributes = false
-        textView.font = .preferredFont(forTextStyle: .body)
+        textView.font = UIFontMetrics(forTextStyle: .body)
+            .scaledFont(for: .monospacedSystemFont(ofSize: 16, weight: .regular))
+        textView.adjustsFontForContentSizeCategory = true
         textView.alwaysBounceVertical = true
         textView.accessibilityIdentifier = "note-editor"
+        DispatchQueue.main.async { textView.becomeFirstResponder() }
         return textView
     }
 

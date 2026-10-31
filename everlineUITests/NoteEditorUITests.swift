@@ -2,33 +2,33 @@ import XCTest
 
 @MainActor
 final class NoteEditorUITests: XCTestCase {
-    override func setUpWithError() throws {
-        continueAfterFailure = false
-    }
+    private var app: XCUIApplication!
+    private var editor: XCUIElement!
 
-    private func launchEditor() -> XCUIElement {
-        let app = XCUIApplication()
+    override func setUp() throws {
+        continueAfterFailure = false
+        app = XCUIApplication()
         app.launch()
-        let editor = app.textViews["note-editor"]
+        editor = app.textViews["note-editor"]
         XCTAssertTrue(editor.waitForExistence(timeout: 5), "note editor is not on screen")
-        editor.click()
-        return editor
     }
 
     func testTypingShowsTextInNote() {
-        let editor = launchEditor()
-
         editor.typeText("Hello Everline")
 
         XCTAssertEqual(editor.value as? String, "Hello Everline")
     }
 
     func testUndoRemovesTypedText() {
-        let editor = launchEditor()
-
         editor.typeText("abc")
         editor.typeKey("z", modifierFlags: .command)
 
         XCTAssertEqual(editor.value as? String, "")
+    }
+
+    func testNewWindowShortcutDoesNotOpenSecondWindow() {
+        app.typeKey("n", modifierFlags: .command)
+
+        XCTAssertEqual(app.windows.count, 1)
     }
 }
