@@ -5,7 +5,7 @@ final class NoteEditorUITests: XCTestCase {
     private var app: XCUIApplication!
     private var editor: XCUIElement!
 
-    override func setUp() throws {
+    override func setUp() {
         continueAfterFailure = false
         app = XCUIApplication()
         app.launch()
