@@ -1,5 +1,7 @@
-import AppKit
 import SwiftUI
+
+#if os(macOS)
+import AppKit
 
 struct NoteEditor: NSViewRepresentable {
     func makeNSView(context: Context) -> NSScrollView {
@@ -19,3 +21,20 @@ struct NoteEditor: NSViewRepresentable {
 
     func updateNSView(_ nsView: NSScrollView, context: Context) {}
 }
+#else
+import UIKit
+
+struct NoteEditor: UIViewRepresentable {
+    func makeUIView(context: Context) -> UITextView {
+        let textView = UITextView()
+        textView.isEditable = true
+        textView.allowsEditingTextAttributes = false
+        textView.font = .preferredFont(forTextStyle: .body)
+        textView.alwaysBounceVertical = true
+        textView.accessibilityIdentifier = "note-editor"
+        return textView
+    }
+
+    func updateUIView(_ uiView: UITextView, context: Context) {}
+}
+#endif
