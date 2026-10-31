@@ -30,6 +30,7 @@ struct NoteEditor: UIViewRepresentable {
         textView.isEditable = true
         textView.allowsEditingTextAttributes = false
         textView.font = .preferredFont(forTextStyle: .body)
+        textView.adjustsFontForContentSizeCategory = true
         textView.alwaysBounceVertical = true
         textView.accessibilityIdentifier = "note-editor"
         return textView
