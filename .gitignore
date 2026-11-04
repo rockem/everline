@@ -30,6 +30,7 @@ fastlane/test_output/
 node_modules/
 
 # Editors
+buildServer.json
 .idea/
 .vscode/
 *.swp

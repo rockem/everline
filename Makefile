@@ -5,7 +5,7 @@ DERIVED_DATA := build
 VERSION ?= 0.0.0
 BUILD ?= 1
 
-.PHONY: test package clean
+.PHONY: test package buildserver clean
 
 test:
 	xcodebuild test -project $(PROJECT) -scheme $(SCHEME) -destination '$(DESTINATION)'
@@ -20,6 +20,10 @@ package:
 		CODE_SIGN_IDENTITY=- CODE_SIGNING_REQUIRED=NO
 	mkdir -p dist
 	ditto -c -k --keepParent $(DERIVED_DATA)/Build/Products/Release/$(SCHEME).app dist/Everline-$(VERSION).zip
+
+# Editor support: lets sourcekit-lsp (Neovim, VS Code) resolve the whole Xcode project. Needs xcode-build-server.
+buildserver:
+	xcode-build-server config -project $(PROJECT) -scheme $(SCHEME)
 
 clean:
 	rm -rf $(DERIVED_DATA) dist
