@@ -15,6 +15,7 @@ with plans in `docs/superpowers/plans/`.
 - iOS compile check (no iOS tests exist): `xcodebuild -project everline.xcodeproj -scheme everline
   -destination 'generic/platform=iOS' CODE_SIGNING_ALLOWED=NO build`
 - Package an unsigned release zip: `make package VERSION=0.0.1 BUILD=1` (VERSION must be `MAJOR.MINOR.PATCH`)
+- Editor LSP setup (Neovim etc.; needs `xcode-build-server`): `make buildserver`, then build once and restart the LSP
 - Lint everything: `pre-commit run --all-files` (needs Docker for the SwiftLint image). SwiftLint alone:
   `swiftlint lint --strict --quiet`. Markdown is wrapped at 120 columns (`.markdownlint.json`).
 
