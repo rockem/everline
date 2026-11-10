@@ -14,7 +14,7 @@ final class NotebookModelTests: XCTestCase {
     }
 
     private func day(_ iso: String) -> Day {
-        DayCalendar(calendar).day(iso: iso)!
+        Day(iso: iso)!
     }
 
     private let calendar: Calendar = {

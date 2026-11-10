@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		000000000000000520000000 /* ViewInspector in Frameworks */ = {isa = PBXBuildFile; productRef = 000000000000000510000000 /* ViewInspector */; };
+		000000000000000530000000 /* GRDB in Frameworks */ = {isa = PBXBuildFile; productRef = 000000000000000511000000 /* GRDB */; };
+		000000000000000540000000 /* GRDB in Frameworks */ = {isa = PBXBuildFile; productRef = 000000000000000512000000 /* GRDB */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -55,6 +57,7 @@
 		000000000000000130000000 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			files = (
+				000000000000000530000000 /* GRDB in Frameworks */,
 			);
 		};
 		000000000000000230000000 /* Frameworks */ = {
@@ -66,6 +69,7 @@
 			isa = PBXFrameworksBuildPhase;
 			files = (
 				000000000000000520000000 /* ViewInspector in Frameworks */,
+				000000000000000540000000 /* GRDB in Frameworks */,
 			);
 		};
 /* End PBXFrameworksBuildPhase section */
@@ -108,6 +112,9 @@
 				000000000000000000000010 /* everline */,
 			);
 			name = everline;
+			packageProductDependencies = (
+				000000000000000511000000 /* GRDB */,
+			);
 			productName = MyApp;
 			productReference = 000000000000000000000120 /* everline.app */;
 			productType = "com.apple.product-type.application";
@@ -152,6 +159,7 @@
 			name = everlineTests;
 			packageProductDependencies = (
 				000000000000000510000000 /* ViewInspector */,
+				000000000000000512000000 /* GRDB */,
 			);
 			productName = everlineTests;
 			productReference = 000000000000000000000140 /* everlineTests.xctest */;
@@ -191,6 +199,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				000000000000000500000000 /* XCRemoteSwiftPackageReference "ViewInspector" */,
+				000000000000000501000000 /* XCRemoteSwiftPackageReference "GRDB" */,
 			);
 			preferredProjectObjectVersion = 90;
 			productRefGroup = 000000000000000000000020 /* Products */;
@@ -586,6 +595,14 @@
 				version = 0.10.5;
 			};
 		};
+		000000000000000501000000 /* XCRemoteSwiftPackageReference "GRDB" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/groue/GRDB.swift";
+			requirement = {
+				kind = exactVersion;
+				version = 7.12.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -593,6 +610,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 000000000000000500000000 /* XCRemoteSwiftPackageReference "ViewInspector" */;
 			productName = ViewInspector;
+		};
+		000000000000000511000000 /* GRDB */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 000000000000000501000000 /* XCRemoteSwiftPackageReference "GRDB" */;
+			productName = GRDB;
+		};
+		000000000000000512000000 /* GRDB */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 000000000000000501000000 /* XCRemoteSwiftPackageReference "GRDB" */;
+			productName = GRDB;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

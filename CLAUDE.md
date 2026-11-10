@@ -22,9 +22,11 @@ with plans in `docs/superpowers/plans/`.
 Two test layers:
 
 - `everlineTests` (hosted in the app, in-process, fast; only this target can `@testable import everline`):
-  - `Unit/`: `DayCalendar` and `NotebookModel` logic.
-  - `Components/`: `NoteEditor` in a real `NSWindow` (`Support/HostedView`), `WeekStrip` through ViewInspector (the
-    only third-party dependency, test target only), and `ContentView` with an injected model.
+  - `Unit/`: `Day`, `DayCalendar` and `NotebookModel` logic.
+  - `SQLite/`: `NotebookDatabase`, `Migrations` and `SQLiteNoteStore` against a real SQLite file in a temporary
+    folder per test (`DatabaseFileTestCase`, which also has small query helpers; no in-memory database).
+  - `Components/`: `NoteEditor` in a real `NSWindow` (`Support/HostedView`), `WeekStrip` through ViewInspector (a
+    third-party dependency of the test target only), and `ContentView` with an injected model.
   - `Support/`: shared test helpers.
 - `everlineUITests` (XCUITest, the real app, needs an unlocked desktop session): three whole-flow tests only. They
   fix "today" with the `EVERLINE_TODAY=YYYY-MM-DD` launch environment variable.
@@ -39,9 +41,18 @@ Add behavior tests at the component layer; add an e2e test only for flows that n
 - `NotebookModel` (`@Observable`) owns today, the selected day, and the in-memory text of every written day. It takes
   an injected `DayCalendar`, so week logic is unit-tested with fixed calendars. The week starts on
   `calendar.firstWeekday`, which the app takes from `Calendar.current` (the system setting). Navigation moves the
-  selection by 7 days, so the highlighted day is always in the strip. Nothing is persisted yet (US-4 adds GRDB).
+  selection by 7 days, so the highlighted day is always in the strip. Nothing is persisted yet (US-4b).
 - `Day` is a time-zone-independent year/month/day value (pure data). `DayCalendar` wraps a `Calendar` and does the
   day arithmetic and week computation; never use 86 400-second offsets.
+- `NoteStore` (`notes(scope:from:to:)`, `save(_:for:)`) is where notes live; everything specific to SQLite and GRDB
+  lives in `everline/SQLite/`. `SQLiteNoteStore` implements it with plain SQL (GRDB, pinned exactly, is the only
+  third-party package in the app target, used as a thin toolkit, no ORM). `NotebookDatabase` opens the file and runs
+  the migrations before the store gets the connection. A migration is one SQL file in `everline/SQLite/Migrations/`
+  named `NNNN-description.sql`; `Migrations` loads the bundled files in order and registers each with GRDB's
+  `DatabaseMigrator`. Never edit a shipped file, add the next number. `notes` rows have a UUID `id`, `scope`
+  (nullable: day, week, month, year, or none for ranges and undated notes) and inclusive `start_date`/`end_date`; one
+  note per scope and period. Saving empty text deletes the row. Nothing in the app uses the store yet (US-4b wires it
+  to the model).
 - `NoteEditor` wraps `NSTextView` (macOS) or `UITextView` (iOS) behind one `text: Binding<String>` API, selected with
   `#if os(macOS)`. The text view takes focus when it joins a window, edits (including undo) reach the binding through
   the text storage, and each editor has its own `UndoManager` because the window's shared one would hold actions

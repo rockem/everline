@@ -42,7 +42,7 @@ extension NotebookModel {
     static func makeDefault() -> NotebookModel {
         let calendar = DayCalendar(.current)
         let override = ProcessInfo.processInfo.environment["EVERLINE_TODAY"]
-        let today = override.flatMap { calendar.day(iso: $0) } ?? calendar.day(of: Date())
+        let today = override.flatMap { Day(iso: $0) } ?? calendar.day(of: Date())
         return NotebookModel(today: today, calendar: calendar)
     }
 }

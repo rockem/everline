@@ -45,7 +45,7 @@ final class ContentViewTests: XCTestCase {
     }
 
     private func show(_ iso: String) {
-        model.select(model.calendar.day(iso: iso)!)
+        model.select(Day(iso: iso)!)
         hosted.settle()
     }
 }
