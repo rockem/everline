@@ -29,7 +29,8 @@ Two test layers:
     third-party dependency of the test target only), and `ContentView` with an injected model.
   - `Support/`: shared test helpers.
 - `everlineUITests` (XCUITest, the real app, needs an unlocked desktop session): three whole-flow tests only. They
-  fix "today" with the `EVERLINE_TODAY=YYYY-MM-DD` launch environment variable.
+  fix "today" with the `EVERLINE_TODAY=YYYY-MM-DD` launch environment variable and, once the app opens the
+  database (US-4b), point `EVERLINE_DIR` at a temporary folder so they never touch the real notebook.
 
 Add behavior tests at the component layer; add an e2e test only for flows that need the real app.
 

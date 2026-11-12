@@ -11,9 +11,11 @@ final class NotebookDatabase {
     }
 
     /// `Everline/notebook.sqlite` inside the user's Application Support folder, which is created when missing.
-    static func defaultLocation() throws -> URL {
-        let support = try FileManager.default.url(for: .applicationSupportDirectory, in: .userDomainMask,
-                                                  appropriateFor: nil, create: true)
+    /// `EVERLINE_DIR` replaces the Application Support folder, so tests and UI tests never touch the real one.
+    static func defaultLocation(environment: [String: String] = ProcessInfo.processInfo.environment) throws -> URL {
+        let support = try environment["EVERLINE_DIR"].map { URL(fileURLWithPath: $0, isDirectory: true) }
+            ?? FileManager.default.url(for: .applicationSupportDirectory, in: .userDomainMask,
+                                       appropriateFor: nil, create: true)
         let folder = support.appendingPathComponent("Everline", isDirectory: true)
         try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
         return folder.appendingPathComponent("notebook.sqlite")

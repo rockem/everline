@@ -1,5 +1,5 @@
-import XCTest
 @testable import everline
+import XCTest
 
 @MainActor
 final class NotebookDatabaseTests: DatabaseFileTestCase {
@@ -18,7 +18,7 @@ final class NotebookDatabaseTests: DatabaseFileTestCase {
 
     func testOpeningAnUnusablePathThrows() throws {
         XCTAssertThrowsError(try NotebookDatabase(path: path.deletingLastPathComponent()
-            .appendingPathComponent("missing/notebook.sqlite")))
+                .appendingPathComponent("missing/notebook.sqlite")))
 
         try Data("this is not a database, just some text".utf8).write(to: path)
         XCTAssertThrowsError(try openDatabase())
@@ -30,9 +30,20 @@ final class NotebookDatabaseTests: DatabaseFileTestCase {
         XCTAssertEqual(location.lastPathComponent, "notebook.sqlite")
         XCTAssertEqual(location.deletingLastPathComponent().lastPathComponent, "Everline")
         XCTAssertTrue(location.path.contains("Application Support"))
+        XCTAssertTrue(isDirectory(location.deletingLastPathComponent()))
+    }
+
+    func testDefaultLocationFollowsDirEnvVar() throws {
+        let base = path.deletingLastPathComponent().appendingPathComponent("support")
+
+        let location = try NotebookDatabase.defaultLocation(environment: ["EVERLINE_DIR": base.path])
+
+        XCTAssertEqual(location.path, base.appendingPathComponent("Everline/notebook.sqlite").path)
+        XCTAssertTrue(isDirectory(location.deletingLastPathComponent()))
+    }
+
+    private func isDirectory(_ url: URL) -> Bool {
         var isDirectory: ObjCBool = false
-        XCTAssertTrue(FileManager.default.fileExists(atPath: location.deletingLastPathComponent().path,
-                                                     isDirectory: &isDirectory))
-        XCTAssertTrue(isDirectory.boolValue)
+        return FileManager.default.fileExists(atPath: url.path, isDirectory: &isDirectory) && isDirectory.boolValue
     }
 }
