@@ -3,20 +3,16 @@ import XCTest
 
 @MainActor
 final class NotebookDatabaseTests: DatabaseFileTestCase {
-    func testOpeningMigratesAFreshFile() throws {
+    func testMigrationsRunOnce() throws {
+        _ = try openDatabase()
         _ = try openDatabase()
 
-        XCTAssertEqual(try strings("SELECT identifier FROM grdb_migrations"), ["0001-create-notes"])
+        let expected = try Migrations.files().map(\.name)
+        XCTAssertEqual(try count("SELECT COUNT(*) FROM grdb_migrations"), expected.count)
+        XCTAssertEqual(try strings("SELECT identifier FROM grdb_migrations ORDER BY identifier"), expected)
     }
 
-    func testReopeningTheFileKeepsOneMigrationRecord() throws {
-        _ = try openDatabase()
-        _ = try openDatabase()
-
-        XCTAssertEqual(try count("SELECT COUNT(*) FROM grdb_migrations"), 1)
-    }
-
-    func testOpeningAnUnusablePathThrows() throws {
+    func testFailWhenOpeningUnusablePath() throws {
         XCTAssertThrowsError(try NotebookDatabase(path: path.deletingLastPathComponent()
                 .appendingPathComponent("missing/notebook.sqlite")))
 
@@ -34,12 +30,12 @@ final class NotebookDatabaseTests: DatabaseFileTestCase {
     }
 
     func testDefaultLocationFollowsDirEnvVar() throws {
-        let base = path.deletingLastPathComponent().appendingPathComponent("support")
+        let base = path.deletingLastPathComponent().appendingPathComponent("notebook-dir")
 
         let location = try NotebookDatabase.defaultLocation(environment: ["EVERLINE_DIR": base.path])
 
-        XCTAssertEqual(location.path, base.appendingPathComponent("Everline/notebook.sqlite").path)
-        XCTAssertTrue(isDirectory(location.deletingLastPathComponent()))
+        XCTAssertEqual(location.path, base.appendingPathComponent("notebook.sqlite").path)
+        XCTAssertTrue(isDirectory(base))
     }
 
     private func isDirectory(_ url: URL) -> Bool {
