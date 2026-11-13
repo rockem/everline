@@ -31,14 +31,4 @@ struct DayCalendar {
         let parts = calendar.dateComponents([.year, .month, .day], from: date)
         return Day(parts.year ?? 1, parts.month ?? 1, parts.day ?? 1)
     }
-
-    /// Parses `YYYY-MM-DD`; nil when malformed or not a real date.
-    func day(iso: String) -> Day? {
-        let parts = iso.split(separator: "-", omittingEmptySubsequences: false).map { Int($0) }
-        guard parts.count == 3, let year = parts[0], let month = parts[1], let day = parts[2] else { return nil }
-        let components = DateComponents(year: year, month: month, day: day)
-        guard let date = calendar.date(from: components),
-              calendar.dateComponents([.year, .month, .day], from: date) == components else { return nil }
-        return Day(year, month, day)
-    }
 }

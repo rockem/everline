@@ -49,14 +49,6 @@ final class DayCalendarTests: XCTestCase {
         XCTAssertEqual(calendar.adding(days: -7, to: Day(2026, 11, 1)), Day(2026, 10, 25))
     }
 
-    func testIsoStringRoundTrip() {
-        let calendar = dayCalendar(firstWeekday: 2)
-
-        XCTAssertEqual(calendar.day(iso: "2026-10-28")?.id, "2026-10-28")
-        XCTAssertNil(calendar.day(iso: "nope"))
-        XCTAssertNil(calendar.day(iso: "2026-02-30"))
-    }
-
     func testDateIsStartOfThatDay() {
         let calendar = dayCalendar(firstWeekday: 2, timeZone: "America/New_York")
         let today = Day(2026, 10, 28)
