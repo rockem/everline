@@ -38,6 +38,8 @@ Add behavior tests at the component layer; add an e2e test only for flows that n
 
 ## Architecture
 
+The big picture (components, flows, diagrams) is in `docs/ARCHITECTURE.md`; update it when those change.
+
 - One multiplatform app target `everline` (macOS and iOS). The Xcode project uses synchronized folder groups
   (`objectVersion = 90`): new files under `everline/`, `everlineTests/`, `everlineUITests/` need no `project.pbxproj`
   edits. Adding a target does, by hand.
