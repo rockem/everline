@@ -11,13 +11,20 @@ final class NotebookDatabase {
     }
 
     /// `notebook.sqlite` inside `EVERLINE_DIR` when it is set, otherwise inside `Everline` in the user's Application
-    /// Support folder. The folder is created when missing.
+    /// Support folder. The folder is created when missing. A relative `EVERLINE_DIR` is a folder name inside the app's
+    /// temporary directory: the sandboxed app can only write there, and UI tests can name one without knowing the path.
     static func defaultLocation(environment: [String: String] = ProcessInfo.processInfo.environment) throws -> URL {
-        let folder = try environment["EVERLINE_DIR"].map { URL(fileURLWithPath: $0, isDirectory: true) }
+        let folder = try environment["EVERLINE_DIR"].map(folder(named:))
             ?? FileManager.default.url(for: .applicationSupportDirectory, in: .userDomainMask,
                                        appropriateFor: nil, create: true)
                 .appendingPathComponent("Everline", isDirectory: true)
         try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
         return folder.appendingPathComponent("notebook.sqlite")
+    }
+
+    private static func folder(named name: String) -> URL {
+        name.hasPrefix("/")
+            ? URL(fileURLWithPath: name, isDirectory: true)
+            : FileManager.default.temporaryDirectory.appendingPathComponent(name, isDirectory: true)
     }
 }

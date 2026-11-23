@@ -17,6 +17,7 @@ repos:
     hooks:
       - id: markdownlint
         language_version: lts
+        exclude: ^\.(agents|claude)/skills/
 
   - repo: local
     hooks:

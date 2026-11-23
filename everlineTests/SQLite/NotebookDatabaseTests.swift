@@ -21,7 +21,7 @@ final class NotebookDatabaseTests: DatabaseFileTestCase {
     }
 
     func testDefaultLocationIsInsideApplicationSupportAndItsFolderExists() throws {
-        let location = try NotebookDatabase.defaultLocation()
+        let location = try NotebookDatabase.defaultLocation(environment: [:])
 
         XCTAssertEqual(location.lastPathComponent, "notebook.sqlite")
         XCTAssertEqual(location.deletingLastPathComponent().lastPathComponent, "Everline")
@@ -36,6 +36,17 @@ final class NotebookDatabaseTests: DatabaseFileTestCase {
 
         XCTAssertEqual(location.path, base.appendingPathComponent("notebook.sqlite").path)
         XCTAssertTrue(isDirectory(base))
+    }
+
+    func testRelativeDirEnvVarIsInsideTheTemporaryDirectory() throws {
+        let name = "everline-test-\(UUID().uuidString)"
+        let folder = FileManager.default.temporaryDirectory.appendingPathComponent(name, isDirectory: true)
+        addTeardownBlock { try? FileManager.default.removeItem(at: folder) }
+
+        let location = try NotebookDatabase.defaultLocation(environment: ["EVERLINE_DIR": name])
+
+        XCTAssertEqual(location.path, folder.appendingPathComponent("notebook.sqlite").path)
+        XCTAssertTrue(isDirectory(folder))
     }
 
     private func isDirectory(_ url: URL) -> Bool {

@@ -5,15 +5,15 @@ import XCTest
 
 @MainActor
 final class WeekStripTests: XCTestCase {
-    private var model: NotebookModel!
+    private var model: NoteRangeModel!
 
     override func setUp() {
         model = makeModel(firstWeekday: 2)
     }
 
-    private func makeModel(firstWeekday: Int) -> NotebookModel {
+    private func makeModel(firstWeekday: Int) -> NoteRangeModel {
         let calendar = calendar(firstWeekday: firstWeekday)
-        return NotebookModel(today: Day(2026, 10, 28), calendar: DayCalendar(calendar))
+        return NoteRangeModel(today: Day(2026, 10, 28), calendar: DayCalendar(calendar))
     }
 
     private func calendar(firstWeekday: Int) -> Calendar {
@@ -45,11 +45,13 @@ final class WeekStripTests: XCTestCase {
     }
 
     func testSelectedDayIsMarkedSelected() throws {
-        let selected = try dayIds().filter { id in
+        XCTAssertEqual(try selectedIds(), ["day-2026-10-28"])
+    }
+
+    private func selectedIds() throws -> [String] {
+        try dayIds().filter { id in
             try button(id).accessibilityTraits().contains(.isSelected)
         }
-
-        XCTAssertEqual(selected, ["day-2026-10-28"])
     }
 
     private func button(_ identifier: String) throws -> InspectableView<ViewType.Button> {
@@ -67,15 +69,16 @@ final class WeekStripTests: XCTestCase {
         XCTAssertEqual(model.selected.id, "2026-10-29")
     }
 
-    func testNextAndPreviousButtonsMoveByWeek() throws {
+    func testNextAndPreviousButtonsMoveByWeekAndKeepTheSelection() throws {
         try button("next-week").tap()
 
-        XCTAssertEqual(model.selected.id, "2026-11-04")
+        XCTAssertEqual(model.selected.id, "2026-10-28")
         XCTAssertEqual(try dayIds().first, "day-2026-11-02")
         XCTAssertEqual(try dayIds().last, "day-2026-11-08")
+        XCTAssertEqual(try selectedIds(), [])
 
         try button("previous-week").tap()
 
-        XCTAssertEqual(model.selected.id, "2026-10-28")
+        XCTAssertEqual(try selectedIds(), ["day-2026-10-28"])
     }
 }

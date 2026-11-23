@@ -1,15 +1,15 @@
 import SwiftUI
 
 struct WeekStrip: View {
-    let model: NotebookModel
+    let model: NoteRangeModel
 
     var body: some View {
         HStack(spacing: 0) {
-            arrow("chevron.left", label: "Previous week", id: "previous-week", action: model.showPreviousWeek)
+            arrow("chevron.left", label: "Previous week", id: "previous-week", action: model.previousRange)
             ForEach(model.weekDays) { day in
                 dayButton(day)
             }
-            arrow("chevron.right", label: "Next week", id: "next-week", action: model.showNextWeek)
+            arrow("chevron.right", label: "Next week", id: "next-week", action: model.nextRange)
         }
         .buttonStyle(.plain)
         .padding(.horizontal, 12)
