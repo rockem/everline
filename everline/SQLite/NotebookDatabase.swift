@@ -17,7 +17,7 @@ final class NotebookDatabase {
         let folder = try environment["EVERLINE_DIR"].map(folder(named:))
             ?? FileManager.default.url(for: .applicationSupportDirectory, in: .userDomainMask,
                                        appropriateFor: nil, create: true)
-                .appendingPathComponent("Everline", isDirectory: true)
+            .appendingPathComponent("Everline", isDirectory: true)
         try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
         return folder.appendingPathComponent("notebook.sqlite")
     }

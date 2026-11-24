@@ -19,7 +19,12 @@ final class NotebookTests: XCTestCase {
     private func makeNotebook() -> Notebook {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = TimeZone(identifier: "UTC")!
-        return Notebook(store: store, today: today, calendar: DayCalendar(calendar))
+        return Notebook(
+            store: store,
+            today: today,
+            calendar: DayCalendar(calendar),
+            scheduler: ManualScheduler()
+        )
     }
 
     private let today = Day(2026, 10, 28)

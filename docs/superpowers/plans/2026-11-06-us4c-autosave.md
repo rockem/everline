@@ -19,18 +19,21 @@ you type, and app lifecycle events (window close, quit, iOS backgrounding). The 
 - **Injected scheduler.** The timer uses a small `Scheduler` interface (run work after N seconds, return a cancellable).
   Production uses the main queue; tests use a manual scheduler that advances time by hand, so no test waits real
   seconds.
-- **Lifecycle hooks call the persistor directly.** `ContentView` calls `persistor.flush()` on macOS when the app is
-  about to terminate and when the window closes (notifications), and on iOS when the scene leaves the foreground
-  (`scenePhase`). The flush is synchronous.
+- **Lifecycle hooks go through `Notebook`.** `Notebook.flush()` is the one way out for "the app is leaving": it asks the
+  persistor to write the pending edit (`NotePersistor.flush()` is internal again, called by the timer and `Notebook`
+  only; tests reach it through those). On macOS, `Notebook` owns an `ExitFlusher` that listens to the app-terminate and
+  window-close notifications on an injected `NotificationCenter` and calls `flush()` synchronously. On iOS, `MyApp`
+  calls `notebook.flush()` when `scenePhase` leaves `active`. `ContentView` stays unaware of all of it.
 
 ## Data structures
 
-- `Scheduler` and a cancellable handle (small protocols), plus the manual scheduler for tests.
+- `Scheduler` and `ScheduledWork` (small protocols; `MainQueueScheduler` is the production one), plus a manual
+  scheduler for tests.
 - `AutosaveTimer`: idle handle, deadline handle, and the callback into `NotePersistor`. Armed only by `textEdited`
   events, so visiting a day never starts it.
 - `AutosaveTiming`: `idle` and `deadline` as plain configuration, defaulting to 2 and 5 seconds (5 is the user's
-  tolerance). The composition root passes it to `NotePersistor`; tests use tiny values (for example 0.05 and 0.15
-  seconds) wherever a real scheduler is involved, so nothing waits real seconds. Not user-facing settings.
+  tolerance). `NotePersistor` and `Notebook` take it and the scheduler with defaults, so the app passes nothing;
+  tests pass the manual scheduler, so nothing waits real seconds. Not user-facing settings.
 
 ## Data flow
 
@@ -42,18 +45,17 @@ you type, and app lifecycle events (window close, quit, iOS backgrounding). The 
 ## Work order
 
 1. `Scheduler`, manual test scheduler, `AutosaveTimer` with tests.
-2. Connect the timer to `NotePersistor` (arm on edit, cancel on flush).
-3. Lifecycle flush hooks in `ContentView` with their component test; iOS compile check.
-4. `CLAUDE.md` update.
+2. Connect the timer to `NotePersistor` (arm on edit, cancel on flush; a timer-driven save needs no explicit flush).
+3. `Notebook.flush()` and the macOS `ExitFlusher`, the iOS `scenePhase` hook in `MyApp`; iOS compile check.
+4. `CLAUDE.md` and `docs/ARCHITECTURE.md` update.
 
 ## Testing
 
 - **Timer tests (manual scheduler, configured timing):** no edit means no fire; a pause fires after the idle time;
   continuous edits fire at the deadline; a flush cancels both; an edit after a flush starts a new cycle.
 - **Persistor tests (fake store and manual scheduler):** an edit then advancing time saves; no edit saves nothing.
-- **New component test (hosted `ContentView`, fake persistor):** posting the app-terminate notification calls `flush()`;
-  closing the hosted window calls `flush()`. This pins the macOS lifecycle wiring. (`ContentView` takes the persistor
-  as an injectable dependency, defaulting to the real one.)
+- **Notebook tests (fake store, manual scheduler, private notification center):** `flush()` writes the pending edit; the
+  app-terminate and window-close notifications do too.
 - **Existing component and e2e tests:** unchanged.
 
 ## Risks

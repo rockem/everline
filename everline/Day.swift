@@ -16,9 +16,9 @@ struct Day: Hashable, Comparable, Identifiable {
     init?(iso: String) {
         let parts = iso.split(separator: "-", omittingEmptySubsequences: false)
         guard parts.count == 3, parts[0].count == 4, parts[1].count == 2, parts[2].count == 2,
-              parts.allSatisfy({ $0.allSatisfy { ("0"..."9").contains($0) } }),
+              parts.allSatisfy({ $0.allSatisfy { ("0" ... "9").contains($0) } }),
               let year = Int(parts[0]), let month = Int(parts[1]), let day = Int(parts[2]),
-              (1...12).contains(month), (1...Day.daysIn(month: month, year: year)).contains(day) else { return nil }
+              (1 ... 12).contains(month), (1 ... Day.daysIn(month: month, year: year)).contains(day) else { return nil }
         self.init(year, month, day)
     }
 

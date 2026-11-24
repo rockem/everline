@@ -1,7 +1,7 @@
 import AppKit
+@testable import everline
 import SwiftUI
 import XCTest
-@testable import everline
 
 @MainActor
 final class ContentViewTests: XCTestCase {

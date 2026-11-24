@@ -3,12 +3,27 @@ import Foundation
 /// The composition root: a model, the persistor that keeps it in step with a store, and the lifetime of both (the
 /// model only holds its observer weakly).
 final class Notebook {
-    let model: NoteRangeModel
+    /// Reports the app leaving to the persistor. The app tells it when a scene goes to the background (iOS).
+    let lifecycle: AppLifecycle
     private let persistor: NotePersistor
 
-    init(store: NoteStore, today: Day, calendar: DayCalendar) {
+    init(
+        store: NoteStore,
+        today: Day,
+        calendar: DayCalendar,
+        scheduler: Scheduler = MainQueueScheduler(),
+        lifecycle: AppLifecycle = AppLifecycle(),
+        timing: AutosaveTiming = .standard
+    ) {
         model = NoteRangeModel(today: today, calendar: calendar)
-        persistor = NotePersistor(store: store, model: model)
+        self.lifecycle = lifecycle
+        persistor = NotePersistor(
+            store: store,
+            model: model,
+            scheduler: scheduler,
+            lifecycle: lifecycle,
+            timing: timing
+        )
         model.observer = persistor
     }
 }

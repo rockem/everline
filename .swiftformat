@@ -1,1 +1,3 @@
 --trailing-commas never
+--maxwidth 120
+--disable wrapMultilineStatementBraces

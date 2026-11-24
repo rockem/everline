@@ -112,7 +112,7 @@ sequenceDiagram
 ### Typing and switching day
 
 Typing only updates the model and the persistor's pending edit. Nothing is written until the selection or range moves,
-so an untouched day never gets a row.
+typing pauses, or the app leaves, so an untouched day never gets a row.
 
 ```mermaid
 sequenceDiagram
@@ -151,6 +151,34 @@ sequenceDiagram
 The save comes first because the selected day may lie inside the new range, and the store must hold its latest text
 before it is read back.
 
+### Autosave and leaving the app
+
+The persistor arms an `AutosaveTimer` on every edit. An idle timer (2 seconds) restarts on each edit; a deadline timer
+(5 seconds) starts at the first edit after a save and is not restarted. Whichever fires first flushes the pending edit
+and cancels the other, so a pause saves quickly and continuous typing still saves every 5 seconds. Time comes from an
+injected `Scheduler`, so tests move a manual clock instead of waiting.
+
+```mermaid
+sequenceDiagram
+    participant M as NoteRangeModel
+    participant P as NotePersistor
+    participant T as AutosaveTimer
+    participant R as RetryingNoteStore
+    participant X as Quit, close or background
+
+    M->>P: textEdited(day, text)
+    P->>T: edited()
+    Note over T: idle restarts, deadline starts once
+    T->>P: fire (pause or deadline)
+    P->>R: save(text, day)
+    X->>P: flush() via Notebook
+    P->>R: save pending, if any
+```
+
+Leaving the app flushes synchronously. On macOS `Notebook` owns an `ExitFlusher` that listens for the terminate and
+window-close notifications; on iOS `MyApp` calls `Notebook.flush()` when the scene leaves the foreground. The views know
+nothing about it.
+
 ### Failure
 
 `RetryingNoteStore` wraps any `NoteStore`, so neither the model nor the persistor ever sees an error. A failed call is
@@ -174,7 +202,5 @@ which is how week logic is tested with fixed calendars.
 
 ## Where it is going
 
-- **Autosave on a timer (US-4c)** will write the pending edit from the persistor on a schedule. The model does not
-  change.
 - **Wider ranges (months, years)** are meant to need no protocol change: `rangeChanged` names only a range, and the
   `scope` column already allows other periods.

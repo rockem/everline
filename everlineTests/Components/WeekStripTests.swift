@@ -1,7 +1,7 @@
+@testable import everline
 import SwiftUI
 import ViewInspector
 import XCTest
-@testable import everline
 
 @MainActor
 final class WeekStripTests: XCTestCase {

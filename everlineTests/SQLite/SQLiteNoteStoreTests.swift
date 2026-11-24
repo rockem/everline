@@ -1,5 +1,5 @@
-import XCTest
 @testable import everline
+import XCTest
 
 @MainActor
 final class SQLiteNoteStoreTests: DatabaseFileTestCase {
@@ -12,7 +12,7 @@ final class SQLiteNoteStoreTests: DatabaseFileTestCase {
     }
 
     private func openStore() throws -> SQLiteNoteStore {
-        SQLiteNoteStore(database: try openDatabase())
+        try SQLiteNoteStore(database: openDatabase())
     }
 
     private func day(_ iso: String) -> Day {
@@ -97,7 +97,7 @@ final class SQLiteNoteStoreTests: DatabaseFileTestCase {
 
     func testLongTextRoundTrips() throws {
         let store = try openStore()
-        let long = String(repeating: "line of a long note\n", count: 50_000)
+        let long = String(repeating: "line of a long note\n", count: 50000)
 
         try store.save(long, for: day("2026-10-28"))
 

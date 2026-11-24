@@ -17,7 +17,7 @@ final class FakeNoteStore: NoteStore {
         calls.filter { if case .save = $0 { true } else { false } }
     }
 
-    func notes(scope: Scope, from first: Day, to last: Day) throws -> [Day: String] {
+    func notes(scope _: Scope, from first: Day, to last: Day) throws -> [Day: String] {
         calls.append(.load(first, last))
         try failIfTold()
         return notes.filter { first <= $0.key && $0.key <= last }

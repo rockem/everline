@@ -52,11 +52,14 @@ The big picture (components, flows, diagrams) is in `docs/ARCHITECTURE.md`; upda
   `previousRange()` move the range by 7 days and keep the selection, which may then lie outside the range (the strip
   highlights nothing); selecting a day moves the range to it.
 - `NotePersistor` is the model's observer and owns the load/save policy: it keeps the one pending edit, writes it when
-  the selection or the range moves, and loads the notes of a range into the model (`loadNotes`) when it changes.
-  `RetryingNoteStore` wraps the store: a failed call is retried, then the give-up handler runs (the app crashes on
-  purpose). `Notebook` is the composition root and keeps model and persistor alive; `Notebook.makeDefault()` opens the
-  SQLite file; the shared `everline` scheme sets `EVERLINE_DIR=unit-tests` for the test action, because the hosted unit
-  tests launch the app, so they never open the real notebook. Autosave on a timer is US-4c.
+  the selection or the range moves, after a pause in typing (2 seconds) or at a deadline while typing goes on (5
+  seconds, an `AutosaveTimer` on an injected `Scheduler`), and on `flush()`; it loads the notes of a range into the
+  model (`loadNotes`) when it changes. `RetryingNoteStore` wraps the store: a failed call is retried, then the give-up
+  handler runs (the app crashes on purpose). `Notebook` is the composition root, keeps model and persistor alive and
+  offers `flush()` for "the app is leaving": on macOS an `ExitFlusher` calls it on quit and window close, on iOS `MyApp`
+  calls it when the scene leaves `active`. `Notebook.makeDefault()` opens the SQLite file; the shared `everline` scheme
+  sets `EVERLINE_DIR=unit-tests` for the test action, because the hosted unit tests launch the app, so they never open
+  the real notebook.
 - `Day` is a time-zone-independent year/month/day value (pure data). `DayCalendar` wraps a `Calendar` and does the
   day arithmetic and week computation; never use 86 400-second offsets.
 - `NoteStore` (`notes(scope:from:to:)`, `save(_:for:)`) is where notes live; everything specific to SQLite and GRDB

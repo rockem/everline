@@ -1,6 +1,6 @@
+@testable import everline
 import GRDB
 import XCTest
-@testable import everline
 
 /// Base for tests that need a real SQLite file: a fresh temporary folder per test, removed afterwards.
 @MainActor
@@ -40,10 +40,10 @@ class DatabaseFileTestCase: XCTestCase {
         }
         try openDatabase().queue.write {
             try $0.execute(sql: """
-                INSERT INTO notes (id, text, created_at, updated_at, scope, start_date, end_date)
-                VALUES ('\(UUID().uuidString)', 't', '2026-01-01 00:00:00', '2026-01-01 00:00:00',
-                        \(literal(scope)), \(literal(start)), \(literal(end)))
-                """)
+            INSERT INTO notes (id, text, created_at, updated_at, scope, start_date, end_date)
+            VALUES ('\(UUID().uuidString)', 't', '2026-01-01 00:00:00', '2026-01-01 00:00:00',
+                    \(literal(scope)), \(literal(start)), \(literal(end)))
+            """)
         }
     }
 }

@@ -5,11 +5,21 @@ final class NotePersistorTests: XCTestCase {
     private var store: FakeNoteStore!
     private var model: NoteRangeModel!
     private var persistor: NotePersistor!
+    private var scheduler: ManualScheduler!
+    private var lifecycle: AppLifecycle!
 
     override func setUp() {
         store = store ?? FakeNoteStore()
+        scheduler = ManualScheduler()
+        lifecycle = AppLifecycle(center: NotificationCenter())
         model = NoteRangeModel(today: day("2026-10-28"), calendar: DayCalendar(makeCalendar()))
-        persistor = NotePersistor(store: store, model: model)
+        persistor = NotePersistor(
+            store: store,
+            model: model,
+            scheduler: scheduler,
+            lifecycle: lifecycle,
+            timing: AutosaveTiming(idle: 2, deadline: 5)
+        )
         model.observer = persistor
         store.calls = []
     }
@@ -23,6 +33,56 @@ final class NotePersistorTests: XCTestCase {
 
     private func day(_ iso: String) -> Day {
         Day(iso: iso)!
+    }
+
+    func testSavesAfterTypingPauses() {
+        model.text = "a"
+        model.text = "ab"
+
+        scheduler.advance(by: 2)
+
+        XCTAssertEqual(store.saves, [.save(day("2026-10-28"), "ab")])
+    }
+
+    func testSavesWhileTypingContinuesAtTheDeadline() {
+        for letter in ["a", "b", "c", "d", "e"] {
+            model.text += letter
+            scheduler.advance(by: 1)
+        }
+
+        XCTAssertEqual(store.saves, [.save(day("2026-10-28"), "abcde")])
+    }
+
+    func testLeavingTheAppSavesTheEdit() {
+        model.text = "a"
+
+        lifecycle.leaving()
+
+        XCTAssertEqual(store.saves, [.save(day("2026-10-28"), "a")])
+    }
+
+    func testLeavingTheAppCancelsTheWaitingSave() {
+        model.text = "a"
+        lifecycle.leaving()
+
+        scheduler.advance(by: 60)
+
+        XCTAssertEqual(store.saves, [.save(day("2026-10-28"), "a")])
+    }
+
+    func testSavesNothingWithoutAnEdit() {
+        scheduler.advance(by: 60)
+
+        XCTAssertEqual(store.calls, [])
+    }
+
+    func testSwitchingDayCancelsTheWaitingSave() {
+        model.text = "a"
+        model.select(day("2026-10-29"))
+
+        scheduler.advance(by: 60)
+
+        XCTAssertEqual(store.saves, [.save(day("2026-10-28"), "a")])
     }
 
     func testSavesTheEditedDayWhenAnotherIsSelected() {

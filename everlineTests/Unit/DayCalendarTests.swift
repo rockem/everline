@@ -1,5 +1,5 @@
-import XCTest
 @testable import everline
+import XCTest
 
 final class DayCalendarTests: XCTestCase {
     func testWeekStartsOnMondayWhenCalendarSaysSo() {

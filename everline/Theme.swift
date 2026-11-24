@@ -1,9 +1,9 @@
 import SwiftUI
 
 #if os(macOS)
-import AppKit
+    import AppKit
 #else
-import UIKit
+    import UIKit
 #endif
 
 /// Light values sampled from the US-3 mockup, dark values from a reference dark-mode screenshot.
@@ -31,16 +31,16 @@ private extension Color {
             }
         }
         #if os(macOS)
-        self.init(nsColor: NSColor(name: nil) { appearance in
-            let isDark = appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
-            let rgb = RGB(isDark ? dark : light)
-            return NSColor(srgbRed: rgb.red, green: rgb.green, blue: rgb.blue, alpha: 1)
-        })
+            self.init(nsColor: NSColor(name: nil) { appearance in
+                let isDark = appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
+                let rgb = RGB(isDark ? dark : light)
+                return NSColor(srgbRed: rgb.red, green: rgb.green, blue: rgb.blue, alpha: 1)
+            })
         #else
-        self.init(uiColor: UIColor { traits in
-            let rgb = RGB(traits.userInterfaceStyle == .dark ? dark : light)
-            return UIColor(red: rgb.red, green: rgb.green, blue: rgb.blue, alpha: 1)
-        })
+            self.init(uiColor: UIColor { traits in
+                let rgb = RGB(traits.userInterfaceStyle == .dark ? dark : light)
+                return UIColor(red: rgb.red, green: rgb.green, blue: rgb.blue, alpha: 1)
+            })
         #endif
     }
 }

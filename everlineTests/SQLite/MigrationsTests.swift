@@ -1,5 +1,5 @@
-import XCTest
 @testable import everline
+import XCTest
 
 /// The rules the schema enforces on bad data, and the migration files themselves.
 @MainActor
@@ -8,7 +8,7 @@ final class MigrationsTests: DatabaseFileTestCase {
         let names = try Migrations.files().map(\.name)
 
         XCTAssertFalse(names.isEmpty)
-        XCTAssertEqual(names.map { String($0.prefix(4)) }, (1...names.count).map { String(format: "%04d", $0) })
+        XCTAssertEqual(names.map { String($0.prefix(4)) }, (1 ... names.count).map { String(format: "%04d", $0) })
         XCTAssertTrue(names.allSatisfy { $0.dropFirst(4).hasPrefix("-") && $0.count > 5 }, "\(names)")
     }
 
