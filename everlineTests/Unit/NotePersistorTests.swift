@@ -70,6 +70,42 @@ final class NotePersistorTests: XCTestCase {
         XCTAssertEqual(store.saves, [.save(day("2026-10-28"), "a")])
     }
 
+    func testAFailedSaveIsRetried() {
+        model.text = "a"
+        store.failuresLeft = 1
+        model.select(day("2026-10-29"))
+
+        scheduler.advance(by: 2)
+
+        XCTAssertEqual(store.saves, [.save(day("2026-10-28"), "a"), .save(day("2026-10-28"), "a")])
+        XCTAssertEqual(store.notes[day("2026-10-28")], "a")
+    }
+
+    func testAFailedEditSurvivesPagingAwayAndBack() {
+        model.text = "mine"
+        store.failsSaves = true
+
+        model.nextRange()
+        model.previousRange()
+
+        XCTAssertEqual(model.text, "mine")
+        store.failsSaves = false
+        scheduler.advance(by: 2)
+        XCTAssertEqual(store.notes[day("2026-10-28")], "mine")
+    }
+
+    func testAFailedEditSurvivesAnEditOnAnotherDay() {
+        model.text = "a"
+        store.failsSaves = true
+        model.select(day("2026-10-29"))
+        model.text = "b"
+        store.failsSaves = false
+
+        model.select(day("2026-10-30"))
+
+        XCTAssertEqual(store.notes, [day("2026-10-28"): "a", day("2026-10-29"): "b"])
+    }
+
     func testSavesNothingWithoutAnEdit() {
         scheduler.advance(by: 60)
 

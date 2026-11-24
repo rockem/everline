@@ -12,6 +12,7 @@ final class FakeNoteStore: NoteStore {
     var notes: [Day: String] = [:]
     var calls: [Call] = []
     var failuresLeft = 0
+    var failsSaves = false
 
     var saves: [Call] {
         calls.filter { if case .save = $0 { true } else { false } }
@@ -25,6 +26,7 @@ final class FakeNoteStore: NoteStore {
 
     func save(_ text: String, for day: Day) throws {
         calls.append(.save(day, text))
+        if failsSaves { throw Failure() }
         try failIfTold()
         notes[day] = text.isEmpty ? nil : text
     }

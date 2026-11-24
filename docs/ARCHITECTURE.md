@@ -36,16 +36,16 @@ flowchart TD
     S --> DB[NotebookDatabase<br/>file and migrations]
 ```
 
-| Part                  | Responsibility                                                                           |
-| --------------------- | ---------------------------------------------------------------------------------------- |
-| `Notebook`            | Builds model, persistor and store stack, attaches the observer, keeps both alive.        |
-| `NoteRangeModel`      | Today, the selected day, a range of days, the notes of that range plus the selected day. |
-| `NotePersistor`       | Keeps the one pending edit; writes it when the selection or range moves; loads ranges.   |
-| `RetryingNoteStore`   | Retries a failed store call, then runs the give-up handler (the app crashes on purpose). |
-| `NoteStore`           | The protocol notes live behind: `notes(scope:from:to:)` and `save(_:for:)`.              |
-| `SQLiteNoteStore`     | Plain SQL over GRDB. One note per scope and period; saving empty text deletes the row.   |
-| `NotebookDatabase`    | Opens the file (`EVERLINE_DIR` can move it) and runs the numbered SQL migrations.        |
-| `ContentView` and co. | SwiftUI shell. `NoteEditor` wraps `NSTextView` or `UITextView` behind one binding.       |
+| Part                  | Responsibility                                                                             |
+| --------------------- | ------------------------------------------------------------------------------------------ |
+| `Notebook`            | Builds model, persistor and store stack, attaches the observer, keeps both alive.          |
+| `NoteRangeModel`      | Today, the selected day, a range of days, the notes of that range plus the selected day.   |
+| `NotePersistor`       | Keeps unsaved edits; writes them on a move, pause or exit, retries failures; loads ranges. |
+| `RetryingNoteStore`   | Retries a failed store call, then runs the give-up handler (the app crashes on purpose).   |
+| `NoteStore`           | The protocol notes live behind: `notes(scope:from:to:)` and `save(_:for:)`.                |
+| `SQLiteNoteStore`     | Plain SQL over GRDB. One note per scope and period; saving empty text deletes the row.     |
+| `NotebookDatabase`    | Opens the file (`EVERLINE_DIR` can move it) and runs the numbered SQL migrations.          |
+| `ContentView` and co. | SwiftUI shell. `NoteEditor` wraps `NSTextView` or `UITextView` behind one binding.         |
 
 ## The model and its observer
 
@@ -71,7 +71,7 @@ classDiagram
         loadNotes(notes)
     }
     class NotePersistor {
-        pending: day and text
+        unsaved: day to text
     }
     NoteRangeModel --> NoteRangeObserver : weak observer
     NotePersistor ..|> NoteRangeObserver
@@ -111,7 +111,7 @@ sequenceDiagram
 
 ### Typing and switching day
 
-Typing only updates the model and the persistor's pending edit. Nothing is written until the selection or range moves,
+Typing only updates the model and the persistor's unsaved edits. Nothing is written until the selection or range moves,
 typing pauses, or the app leaves, so an untouched day never gets a row.
 
 ```mermaid
@@ -123,11 +123,11 @@ sequenceDiagram
 
     V->>M: text = "..."
     M->>P: textEdited(day, text)
-    Note over P: pending = day and text
+    Note over P: unsaved[day] = text
     V->>M: select(otherDay)
     M->>P: selectionChanged(otherDay)
     P->>R: save(text, day)
-    Note over P: pending cleared
+    Note over P: unsaved[day] removed once saved
 ```
 
 ### Paging the range
@@ -141,7 +141,7 @@ sequenceDiagram
 
     V->>M: nextRange()
     M->>P: rangeChanged(first, last)
-    P->>R: save pending, if any
+    P->>R: save unsaved edits, if any
     P->>R: notes(.day, first, last)
     R-->>P: notes
     P->>M: loadNotes(notes)
@@ -154,7 +154,7 @@ before it is read back.
 ### Autosave and leaving the app
 
 The persistor arms an `AutosaveTimer` on every edit. An idle timer (2 seconds) restarts on each edit; a deadline timer
-(5 seconds) starts at the first edit after a save and is not restarted. Whichever fires first flushes the pending edit
+(5 seconds) starts at the first edit after a save and is not restarted. Whichever fires first flushes the unsaved edits
 and cancels the other, so a pause saves quickly and continuous typing still saves every 5 seconds. Time comes from an
 injected `Scheduler`, so tests move a manual clock instead of waiting.
 
@@ -172,7 +172,7 @@ sequenceDiagram
     T->>P: fire (pause or deadline)
     P->>R: save(text, day)
     X->>P: flush() via Notebook
-    P->>R: save pending, if any
+    P->>R: save unsaved edits, if any
 ```
 
 Leaving the app flushes synchronously. On macOS `Notebook` owns an `ExitFlusher` that listens for the terminate and

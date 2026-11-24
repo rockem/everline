@@ -33,11 +33,11 @@ selected range and saves pending text. The model never calls a store, a timer or
 - **Model is passive.** `model.loadNotes(_:)` replaces the notes of the current range and keeps the selected day's own
   text when that day is outside it. The model has no dirty flag, no store and no flush; the `text` setter just updates
   state and notifies.
-- **`NotePersistor` owns the policy.** It keeps the one pending edit (day and text). On a selection change or a
-  range change it writes the pending text, then clears it. On a range change it then loads the new range and hands it
-  to the model; the write comes first because the selected day may lie inside the new range and the store must hold
-  its latest text. One class, two clearly separate responsibilities (load, save), so a `NoteLoader` can be split off
-  later.
+- **`NotePersistor` owns the policy.** It keeps the edits not yet saved (the latest text per day). On a selection change
+  or a range change it writes the unsaved text and clears what was saved. On a range change it then loads the new range
+  and hands it to the model; the write comes first because the selected day may lie inside the new range and the store
+  must hold its latest text. One class, two clearly separate responsibilities (load, save), so a `NoteLoader` can be
+  split off later.
 - **Decorator for failure policy.** `RetryingNoteStore` wraps any store: retry a failed call a few times (attempts and
   pause are plain configuration: a few tries and a short pause by default, no pause in tests), then call a give-up
   handler. The app's handler crashes (`fatalError`); tests pass a recording one. It covers loading too, so neither the
@@ -57,7 +57,7 @@ selected range and saves pending text. The model never calls a store, a timer or
   (the note of `notes[selected]`).
 - Observer events: `textEdited(day, text)`, `selectionChanged(to)` and `rangeChanged(from, to)`. Events carry the data
   so the receiver never reads the model's current selection (that would have moved already).
-- `NotePersistor`: the store, the model reference (weak), and `pending: (day, text)?`. A pending edit exists only
+- `NotePersistor`: the store, the model reference (weak), and `unsaved: [Day: String]`. An unsaved edit exists only
   after a real edit, so an untouched day is never saved and never gets a row.
 - `FakeNoteStore` (tests only): a dictionary that records saves and can be told to fail.
 
@@ -89,8 +89,8 @@ selected range and saves pending text. The model never calls a store, a timer or
   keeps an outside selected day's text; no store involved.
 - **Persistor tests (fake store):** pending saved on selection change and range change; untouched day never saved; a
   saved edit is not saved again; a range change loads the new range before returning and the selected day keeps its
-  text; a second edit replaces the first pending one. Persisting across a relaunch is covered by slice 1's store tests
-  (reopening the file).
+  text; a second edit replaces the first unsaved one on the same day; a failed save is kept, retried and shown through
+  loads. Persisting across a relaunch is covered by slice 1's store tests (reopening the file).
 - **Decorator tests:** a transient failure is retried without giving up; the last failure calls the handler.
 - **Existing component and e2e tests:** unchanged apart from the rename, the e2e setup (temporary database path) and
   the next/previous week assertions, which now expect the selection to stay and nothing to be highlighted.
