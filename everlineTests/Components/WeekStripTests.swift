@@ -63,6 +63,31 @@ final class WeekStripTests: XCTestCase {
         XCTAssertFalse(try button("day-2026-10-29").accessibilityLabel().string().contains("today"))
     }
 
+    func testDotMarksOnlyDaysWithNotes() throws {
+        model.loadNotes([Day(2026, 10, 27): "yesterday", Day(2026, 10, 29): "tomorrow"])
+
+        let withDot = try dayIds().filter { try hasNoteDot($0) }
+
+        XCTAssertEqual(withDot, ["day-2026-10-27", "day-2026-10-29"])
+    }
+
+    private func hasNoteDot(_ identifier: String) throws -> Bool {
+        (try? button(identifier).find(viewWithAccessibilityIdentifier: "note-dot")) != nil
+    }
+
+    func testDotAppearsWhenTheSelectedDayGetsText() throws {
+        model.text = "hello"
+
+        XCTAssertTrue(try hasNoteDot("day-2026-10-28"))
+    }
+
+    func testDayWithANoteSaysSoToVoiceOver() throws {
+        model.loadNotes([Day(2026, 10, 29): "tomorrow"])
+
+        XCTAssertTrue(try button("day-2026-10-29").accessibilityLabel().string().contains("has a note"))
+        XCTAssertFalse(try button("day-2026-10-30").accessibilityLabel().string().contains("has a note"))
+    }
+
     func testPressingADaySelectsIt() throws {
         try button("day-2026-10-29").tap()
 

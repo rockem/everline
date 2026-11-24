@@ -1,3 +1,6 @@
+# Bundled third-party fonts and their licenses are kept exactly as shipped.
+exclude: ^everline/Fonts/
+
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0

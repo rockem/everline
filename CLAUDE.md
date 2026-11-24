@@ -27,7 +27,7 @@ Two test layers:
   - `SQLite/`: `NotebookDatabase`, `Migrations` and `SQLiteNoteStore` against a real SQLite file in a temporary
     folder per test (`DatabaseFileTestCase`, which also has small query helpers; no in-memory database).
   - `Components/`: `NoteEditor` in a real `NSWindow` (`Support/HostedView`), `WeekStrip` through ViewInspector (a
-    third-party dependency of the test target only), and `ContentView` with an injected model.
+    third-party dependency of the test target only), `PageHeader`, and `ContentView` with an injected model.
   - `Support/`: shared test helpers.
 - `everlineUITests` (XCUITest, the real app, needs an unlocked desktop session): three whole-flow tests only. They
   fix "today" with the `EVERLINE_TODAY=YYYY-MM-DD` launch environment variable and point `EVERLINE_DIR` at a fresh
@@ -75,10 +75,23 @@ The big picture (components, flows, diagrams) is in `docs/ARCHITECTURE.md`; upda
   the text storage, and each editor has its own `UndoManager` because the window's shared one would hold actions
   for text views that were already replaced. `ContentView` puts `.id(model.selected)` on it, so each day gets a fresh
   text view: its own undo history while you stay on the day (lost when you leave), and focus on creation.
-- `MyApp` uses a single `Window` on macOS (no Cmd-N second window) and a `WindowGroup` on iOS (`Window` is unavailable
-  there).
-- `Theme` holds the palette as light/dark dynamic colors. Light values come from the US-3 mockup in the issue.
-- Tests locate elements by accessibility identifier: `note-editor`, `day-YYYY-MM-DD`, `previous-week`, `next-week`.
+- `MyApp` uses a single `Window` on macOS (no Cmd-N second window) with a hidden title bar (`ContentView` keeps a 28 pt
+  band above the strip for the window buttons and ignores the top safe area) and a `WindowGroup` on iOS (`Window` is
+  unavailable there).
+- `Theme` holds the palette as light/dark dynamic colors, sampled from the issue #21 mockups. Colors for the native text
+  views are platform colors (`PlatformColor`), the rest are SwiftUI `Color`s. Text that carries meaning is at least
+  4.5:1 against the background; the placeholder is deliberately fainter (about 3:1).
+- Fonts are bundled in `everline/Fonts/` (Manrope for the interface, IBM Plex Mono for notes, both OFL with their
+  licenses next to them) and registered in `Fonts.register()` at launch, the same way on both platforms. UI sizes are
+  `@ScaledMetric` values through `Fonts.ui(_:_:relativeTo:)`, so they follow Dynamic Type. `NoteTypography` holds the
+  note text numbers (16 pt, line height 1.8, letter spacing -0.01 em, the placeholder text) and the platform attributes
+  both text views apply to all text and to the typing attributes.
+- `PageHeader` shows the selected day as a large title; the header and the editor share one centered column (680 pt at
+  most). The text view draws the empty-page placeholder itself (a label on iOS), so it lines up with the real text. Note
+  text is centered in its 1.8 line height with `baselineOffset`, and the caret is cut down to the font height
+  (`NoteTypography.caretRect(in:)`).
+- Tests locate elements by accessibility identifier: `note-editor`, `day-YYYY-MM-DD`, `previous-week`, `next-week`,
+  `note-dot` (the dot under a day whose note has text), `page-title`.
 
 ## Delivery
 

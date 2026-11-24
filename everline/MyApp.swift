@@ -1,7 +1,12 @@
 import SwiftUI
 
 @main struct MyApp: App {
-    private let notebook = Notebook.makeDefault()
+    private let notebook: Notebook
+
+    init() {
+        Fonts.register()
+        notebook = Notebook.makeDefault()
+    }
     #if !os(macOS)
         @Environment(\.scenePhase) private var scenePhase
     #endif
@@ -11,6 +16,7 @@ import SwiftUI
             Window("Everline", id: "main") {
                 ContentView(model: notebook.model)
             }
+            .windowStyle(.hiddenTitleBar)
         #else
             WindowGroup {
                 ContentView(model: notebook.model)

@@ -153,6 +153,27 @@ extension NoteRangeModelTests {
         XCTAssertEqual(model.text, "loaded")
     }
 
+    func testHasNoteForDaysWithText() {
+        let model = makeModel()
+
+        model.loadNotes([day("2026-10-29"): "loaded", day("2026-10-30"): ""])
+
+        XCTAssertTrue(model.hasNote(on: day("2026-10-29")))
+        XCTAssertFalse(model.hasNote(on: day("2026-10-30")))
+        XCTAssertFalse(model.hasNote(on: day("2026-10-31")))
+    }
+
+    func testHasNoteFollowsTypingOnTheSelectedDay() {
+        let model = makeModel()
+        XCTAssertFalse(model.hasNote(on: day("2026-10-28")))
+
+        model.text = "hello"
+        XCTAssertTrue(model.hasNote(on: day("2026-10-28")))
+
+        model.text = ""
+        XCTAssertFalse(model.hasNote(on: day("2026-10-28")))
+    }
+
     func testLoadingNotesTellsNoOne() {
         let (model, observer) = makeObservedModel()
 
