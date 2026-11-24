@@ -1,15 +1,23 @@
 import SwiftUI
 
 @main struct MyApp: App {
+    private let notebook = Notebook.makeDefault()
+    #if !os(macOS)
+        @Environment(\.scenePhase) private var scenePhase
+    #endif
+
     var body: some Scene {
         #if os(macOS)
-        Window("Everline", id: "main") {
-            ContentView()
-        }
+            Window("Everline", id: "main") {
+                ContentView(model: notebook.model)
+            }
         #else
-        WindowGroup {
-            ContentView()
-        }
+            WindowGroup {
+                ContentView(model: notebook.model)
+                    .onChange(of: scenePhase) { _, phase in
+                        if phase != .active { notebook.lifecycle.leaving() }
+                    }
+            }
         #endif
     }
 }

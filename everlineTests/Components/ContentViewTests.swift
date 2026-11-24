@@ -1,18 +1,18 @@
 import AppKit
+@testable import everline
 import SwiftUI
 import XCTest
-@testable import everline
 
 @MainActor
 final class ContentViewTests: XCTestCase {
     private var hosted: HostedView<ContentView>!
-    private var model: NotebookModel!
+    private var model: NoteRangeModel!
 
     override func setUp() {
         var calendar = Calendar(identifier: .gregorian)
         calendar.firstWeekday = 2
         calendar.timeZone = TimeZone(identifier: "UTC")!
-        model = NotebookModel(today: Day(2026, 10, 28), calendar: DayCalendar(calendar))
+        model = NoteRangeModel(today: Day(2026, 10, 28), calendar: DayCalendar(calendar))
         hosted = HostedView(ContentView(model: model), size: CGSize(width: 700, height: 500))
         hosted.settle()
     }
@@ -45,7 +45,7 @@ final class ContentViewTests: XCTestCase {
     }
 
     private func show(_ iso: String) {
-        model.select(model.calendar.day(iso: iso)!)
+        model.select(Day(iso: iso)!)
         hosted.settle()
     }
 }

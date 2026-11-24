@@ -1,9 +1,9 @@
 import SwiftUI
 
 struct ContentView: View {
-    @State private var model: NotebookModel
+    @State private var model: NoteRangeModel
 
-    init(model: NotebookModel = .makeDefault()) {
+    init(model: NoteRangeModel) {
         _model = State(initialValue: model)
     }
 
@@ -19,5 +19,5 @@ struct ContentView: View {
 }
 
 #Preview {
-    ContentView()
+    ContentView(model: NoteRangeModel(today: Day(2026, 10, 28), calendar: DayCalendar(.current)))
 }

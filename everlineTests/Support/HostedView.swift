@@ -25,7 +25,7 @@ final class HostedView<Content: View> {
         RunLoop.current.run(until: Date().addingTimeInterval(seconds))
     }
 
-    func find<T: NSView>(_ type: T.Type) -> T? {
+    func find<T: NSView>(_: T.Type) -> T? {
         func search(_ view: NSView) -> T? {
             if let match = view as? T { return match }
             for subview in view.subviews {

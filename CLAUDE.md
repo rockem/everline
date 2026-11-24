@@ -22,26 +22,54 @@ with plans in `docs/superpowers/plans/`.
 Two test layers:
 
 - `everlineTests` (hosted in the app, in-process, fast; only this target can `@testable import everline`):
-  - `Unit/`: `DayCalendar` and `NotebookModel` logic.
-  - `Components/`: `NoteEditor` in a real `NSWindow` (`Support/HostedView`), `WeekStrip` through ViewInspector (the
-    only third-party dependency, test target only), and `ContentView` with an injected model.
+  - `Unit/`: `Day`, `DayCalendar`, `NoteRangeModel`, `NotePersistor`, `RetryingNoteStore` and `Notebook` logic, with a
+    `FakeNoteStore` from `Support/`.
+  - `SQLite/`: `NotebookDatabase`, `Migrations` and `SQLiteNoteStore` against a real SQLite file in a temporary
+    folder per test (`DatabaseFileTestCase`, which also has small query helpers; no in-memory database).
+  - `Components/`: `NoteEditor` in a real `NSWindow` (`Support/HostedView`), `WeekStrip` through ViewInspector (a
+    third-party dependency of the test target only), and `ContentView` with an injected model.
   - `Support/`: shared test helpers.
 - `everlineUITests` (XCUITest, the real app, needs an unlocked desktop session): three whole-flow tests only. They
-  fix "today" with the `EVERLINE_TODAY=YYYY-MM-DD` launch environment variable.
+  fix "today" with the `EVERLINE_TODAY=YYYY-MM-DD` launch environment variable and point `EVERLINE_DIR` at a fresh
+  folder name per test so they never touch the real notebook (a relative name lands in the sandboxed app's temporary
+  directory).
 
 Add behavior tests at the component layer; add an e2e test only for flows that need the real app.
 
 ## Architecture
 
+The big picture (components, flows, diagrams) is in `docs/ARCHITECTURE.md`; update it when those change.
+
 - One multiplatform app target `everline` (macOS and iOS). The Xcode project uses synchronized folder groups
   (`objectVersion = 90`): new files under `everline/`, `everlineTests/`, `everlineUITests/` need no `project.pbxproj`
   edits. Adding a target does, by hand.
-- `NotebookModel` (`@Observable`) owns today, the selected day, and the in-memory text of every written day. It takes
-  an injected `DayCalendar`, so week logic is unit-tested with fixed calendars. The week starts on
-  `calendar.firstWeekday`, which the app takes from `Calendar.current` (the system setting). Navigation moves the
-  selection by 7 days, so the highlighted day is always in the strip. Nothing is persisted yet (US-4 adds GRDB).
+- `NoteRangeModel` (`@Observable`) is passive: it owns today, the selected day, a range of days (today the week of a
+  range anchor) and the notes of that range plus the selected day, and tells its weak `NoteRangeObserver` about edits,
+  selection changes and range changes (`textEdited`, `selectionChanged`, `rangeChanged`, synchronously, with the data in
+  the call; attaching an observer reports the current range). It takes an injected `DayCalendar`, so week logic is
+  unit-tested with fixed calendars. The week starts on
+  `calendar.firstWeekday`, which the app takes from `Calendar.current` (the system setting). `nextRange()` and
+  `previousRange()` move the range by 7 days and keep the selection, which may then lie outside the range (the strip
+  highlights nothing); selecting a day moves the range to it.
+- `NotePersistor` is the model's observer and owns the load/save policy: it keeps the edits not yet saved (a failed save
+  stays unsaved, is retried after the next pause and shows through every load), writes them when the selection or the
+  range moves, after a pause in typing (2 seconds) or at a deadline while typing goes on (5 seconds, an `AutosaveTimer`
+  on an injected `Scheduler`), and on `flush()`; it loads the notes of a range into the model (`loadNotes`) when it
+  changes. `RetryingNoteStore` wraps the store: a failed call is retried, then the give-up handler runs (the app crashes
+  on purpose). `Notebook` is the composition root, keeps model and persistor alive and offers `flush()` for "the app is
+  leaving": on macOS an `ExitFlusher` calls it on quit and window close, on iOS `MyApp` calls it when the scene leaves
+  `active`. `Notebook.makeDefault()` opens the SQLite file; the shared `everline` scheme sets `EVERLINE_DIR=unit-tests`
+  for the test action, because the hosted unit tests launch the app, so they never open the real notebook.
 - `Day` is a time-zone-independent year/month/day value (pure data). `DayCalendar` wraps a `Calendar` and does the
   day arithmetic and week computation; never use 86 400-second offsets.
+- `NoteStore` (`notes(scope:from:to:)`, `save(_:for:)`) is where notes live; everything specific to SQLite and GRDB
+  lives in `everline/SQLite/`. `SQLiteNoteStore` implements it with plain SQL (GRDB, pinned exactly, is the only
+  third-party package in the app target, used as a thin toolkit, no ORM). `NotebookDatabase` opens the file and runs
+  the migrations before the store gets the connection. A migration is one SQL file in `everline/SQLite/Migrations/`
+  named `NNNN-description.sql`; `Migrations` loads the bundled files in order and registers each with GRDB's
+  `DatabaseMigrator`. Never edit a shipped file, add the next number. `notes` rows have a UUID `id`, `scope`
+  (nullable: day, week, month, year, or none for ranges and undated notes) and inclusive `start_date`/`end_date`; one
+  note per scope and period. Saving empty text deletes the row. `Notebook` wires it to the model.
 - `NoteEditor` wraps `NSTextView` (macOS) or `UITextView` (iOS) behind one `text: Binding<String>` API, selected with
   `#if os(macOS)`. The text view takes focus when it joins a window, edits (including undo) reach the binding through
   the text storage, and each editor has its own `UndoManager` because the window's shared one would hold actions
