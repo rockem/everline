@@ -51,6 +51,11 @@ final class NoteRangeModel {
         }
     }
 
+    /// Whether the day's note has any text. Only days the model holds (the range and the selected day) can have one.
+    func hasNote(on day: Day) -> Bool {
+        !(notes[day] ?? "").isEmpty
+    }
+
     /// Replaces the notes of the current range, keeping the selected day's own text when it lies outside the range.
     /// Changes no selection and tells no one.
     func loadNotes(_ loaded: [Day: String]) {

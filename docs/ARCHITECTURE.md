@@ -36,16 +36,16 @@ flowchart TD
     S --> DB[NotebookDatabase<br/>file and migrations]
 ```
 
-| Part                  | Responsibility                                                                             |
-| --------------------- | ------------------------------------------------------------------------------------------ |
-| `Notebook`            | Builds model, persistor and store stack, attaches the observer, keeps both alive.          |
-| `NoteRangeModel`      | Today, the selected day, a range of days, the notes of that range plus the selected day.   |
-| `NotePersistor`       | Keeps unsaved edits; writes them on a move, pause or exit, retries failures; loads ranges. |
-| `RetryingNoteStore`   | Retries a failed store call, then runs the give-up handler (the app crashes on purpose).   |
-| `NoteStore`           | The protocol notes live behind: `notes(scope:from:to:)` and `save(_:for:)`.                |
-| `SQLiteNoteStore`     | Plain SQL over GRDB. One note per scope and period; saving empty text deletes the row.     |
-| `NotebookDatabase`    | Opens the file (`EVERLINE_DIR` can move it) and runs the numbered SQL migrations.          |
-| `ContentView` and co. | SwiftUI shell. `NoteEditor` wraps `NSTextView` or `UITextView` behind one binding.         |
+| Part                  | Responsibility                                                                                |
+| --------------------- | --------------------------------------------------------------------------------------------- |
+| `Notebook`            | Builds model, persistor and store stack, attaches the observer, keeps both alive.             |
+| `NoteRangeModel`      | Today, the selected day, a range of days, the notes of that range plus the selected day.      |
+| `NotePersistor`       | Keeps unsaved edits; writes them on a move, pause or exit, retries failures; loads ranges.    |
+| `RetryingNoteStore`   | Retries a failed store call, then runs the give-up handler (the app crashes on purpose).      |
+| `NoteStore`           | The protocol notes live behind: `notes(scope:from:to:)` and `save(_:for:)`.                   |
+| `SQLiteNoteStore`     | Plain SQL over GRDB. One note per scope and period; saving empty text deletes the row.        |
+| `NotebookDatabase`    | Opens the file (`EVERLINE_DIR` can move it) and runs the numbered SQL migrations.             |
+| `ContentView` and co. | SwiftUI shell: `WeekStrip`, `PageHeader`, and `NoteEditor` (a native text view, one binding). |
 
 ## The model and its observer
 
@@ -193,6 +193,14 @@ retried a few times with a short pause. When the last attempt fails, the give-up
   set it through the shared scheme, and each UI test uses a fresh relative folder name.
 - A migration is one SQL file in `everline/SQLite/Migrations/` named `NNNN-description.sql`. Shipped files are never
   edited; the next number is added.
+
+## Look and feel
+
+Views only read the model; the look lives in a few small types. `Theme` is the light/dark palette, `Fonts` registers the
+bundled Manrope (interface) and IBM Plex Mono (notes), and `NoteTypography` holds the note text numbers that both native
+text views apply. The screen is a week strip above one centered column holding `PageHeader` (the day as a large title)
+and the editor, which draws its own empty-page placeholder so it lines up with the real text. Interface text scales with
+Dynamic Type, and controls keep a 44 pt minimum hit area.
 
 ## Day and calendar
 
