@@ -55,4 +55,11 @@ final class DayCalendarTests: XCTestCase {
 
         XCTAssertEqual(calendar.day(of: calendar.date(of: today)), today)
     }
+
+    func testFormatsADayAsItselfInTheCalendarsTimeZone() {
+        let calendar = dayCalendar(firstWeekday: 2, timeZone: "Pacific/Kiritimati")
+        let style = calendar.formatStyle().locale(Locale(identifier: "en_US")).month(.wide).day()
+
+        XCTAssertEqual(calendar.date(of: Day(2026, 11, 26)).formatted(style), "November 26")
+    }
 }

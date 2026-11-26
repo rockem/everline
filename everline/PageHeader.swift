@@ -7,8 +7,8 @@ struct PageHeader: View {
     @ScaledMetric(relativeTo: .largeTitle) private var titleSize: CGFloat = 44
 
     var body: some View {
-        Text(calendar.date(of: day), format: .dateTime.month(.wide).day())
-            .font(Fonts.ui(titleSize, .medium, relativeTo: .largeTitle))
+        Text(calendar.date(of: day), format: calendar.formatStyle().month(.wide).day())
+            .font(Fonts.ui(titleSize, .medium))
             .tracking(-1.3)
             .foregroundStyle(Theme.primaryText)
             .frame(maxWidth: .infinity, alignment: .leading)

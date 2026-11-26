@@ -21,8 +21,9 @@ enum Fonts {
         _ = registered
     }
 
-    /// An interface font that grows with Dynamic Type, relative to a text style.
-    static func ui(_ size: CGFloat, _ weight: Weight, relativeTo style: Font.TextStyle) -> Font {
-        .custom(weight.rawValue, size: size, relativeTo: style)
+    /// An interface font at exactly `size`. Pass a `@ScaledMetric` value to follow Dynamic Type: the font does not
+    /// scale itself, so the size is never scaled twice.
+    static func ui(_ size: CGFloat, _ weight: Weight) -> Font {
+        .custom(weight.rawValue, fixedSize: size)
     }
 }

@@ -38,17 +38,18 @@ struct WeekStrip: View {
 
     private func dayButton(_ day: Day) -> some View {
         let date = model.calendar.date(of: day)
+        let style = model.calendar.formatStyle()
         let isSelected = day == model.selected
         let isToday = day == model.today
         let color = textColor(isSelected: isSelected, isToday: isToday)
         return Button { model.select(day) } label: {
             VStack(spacing: 2) {
-                Text(isToday ? "Today" : date.formatted(.dateTime.weekday(.abbreviated)))
-                    .font(Fonts.ui(labelSize, .semibold, relativeTo: .caption2))
+                Text(isToday ? "Today" : date.formatted(style.weekday(.abbreviated)))
+                    .font(Fonts.ui(labelSize, .semibold))
                     .textCase(.uppercase)
                     .tracking(1.4)
-                Text(date, format: .dateTime.day())
-                    .font(Fonts.ui(numberSize, isToday || isSelected ? .semibold : .medium, relativeTo: .title3))
+                Text(date, format: style.day())
+                    .font(Fonts.ui(numberSize, isToday || isSelected ? .semibold : .medium))
                 noteDot(model.hasNote(on: day))
             }
             .foregroundStyle(color)
@@ -62,7 +63,7 @@ struct WeekStrip: View {
             }
             .contentShape(Rectangle())
         }
-        .accessibilityLabel(date.formatted(.dateTime.weekday(.wide).day()) + (isToday ? ", today" : "")
+        .accessibilityLabel(date.formatted(style.weekday(.wide).day()) + (isToday ? ", today" : "")
             + (model.hasNote(on: day) ? ", has a note" : ""))
         .accessibilityIdentifier("day-\(day.id)")
         .accessibilityAddTraits(isSelected ? .isSelected : [])

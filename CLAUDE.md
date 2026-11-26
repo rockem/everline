@@ -83,8 +83,9 @@ The big picture (components, flows, diagrams) is in `docs/ARCHITECTURE.md`; upda
   4.5:1 against the background; the placeholder is deliberately fainter (about 3:1).
 - Fonts are bundled in `everline/Fonts/` (Manrope for the interface, IBM Plex Mono for notes, both OFL with their
   licenses next to them) and registered in `Fonts.register()` at launch, the same way on both platforms. UI sizes are
-  `@ScaledMetric` values through `Fonts.ui(_:_:relativeTo:)`, so they follow Dynamic Type. `NoteTypography` holds the
-  note text numbers (16 pt, line height 1.8, letter spacing -0.01 em, the placeholder text) and the platform attributes
+  `@ScaledMetric` values through `Fonts.ui(_:_:)` (a fixed-size font, so a size is never scaled twice), so they follow
+  Dynamic Type. `NoteTypography` holds the note text numbers (16 pt, line height 1.8, letter spacing -0.01 em, the
+  placeholder text) and the platform attributes
   both text views apply to all text and to the typing attributes.
 - `PageHeader` shows the selected day as a large title; the header and the editor share one centered column (680 pt at
   most). The text view draws the empty-page placeholder itself (a label on iOS), so it lines up with the real text. Note

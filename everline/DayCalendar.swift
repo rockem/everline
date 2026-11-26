@@ -22,6 +22,12 @@ struct DayCalendar {
             ?? Date(timeIntervalSince1970: 0)
     }
 
+    /// A date format style that reads dates in this calendar and time zone, so a day's start never shows as the
+    /// day before (the plain `.dateTime` style uses the system time zone).
+    func formatStyle() -> Date.FormatStyle {
+        Date.FormatStyle(locale: calendar.locale ?? .current, calendar: calendar, timeZone: calendar.timeZone)
+    }
+
     func adding(days: Int, to day: Day) -> Day {
         let start = date(of: day)
         return self.day(of: calendar.date(byAdding: .day, value: days, to: start) ?? start)

@@ -131,7 +131,7 @@ import SwiftUI
             backgroundColor = .clear
             allowsEditingTextAttributes = false
             alwaysBounceVertical = true
-            textContainer?.lineFragmentPadding = 0
+            self.textContainer.lineFragmentPadding = 0
             textContainerInset = .zero
             tintColor = Theme.noteText
             accessibilityIdentifier = "note-editor"
